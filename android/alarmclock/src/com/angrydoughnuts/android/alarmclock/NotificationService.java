@@ -33,6 +33,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
+import android.util.Log;
 
 /**
  * This service is responsible for notifying the user when an alarm is

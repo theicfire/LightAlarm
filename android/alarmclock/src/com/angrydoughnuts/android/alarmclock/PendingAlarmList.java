@@ -18,11 +18,13 @@ package com.angrydoughnuts.android.alarmclock;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.TreeMap;
+import java.util.Map;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 /**
  * This container holds a list of all currently scheduled alarms.
@@ -53,6 +55,8 @@ public final class PendingAlarmList {
   }
 
   public void put(long alarmId, AlarmTime time) {
+    Log.d("chase", "call put");
+    putLight(alarmId, time);
     // Remove this alarm if it exists already.
     remove(alarmId);
 
@@ -97,7 +101,71 @@ public final class PendingAlarmList {
     alarmTimes.put(time, alarmId);
 
     if (pendingAlarms.size() != alarmTimes.size()) {
+      // oh no
+      for (Map.Entry<Long, PendingAlarm> entry : pendingAlarms.entrySet()) {
+           Log.d("chase", "PendingKey: " + entry.getKey() + ". Value: " + entry.getValue());
+      }
+      for (Map.Entry<AlarmTime, Long> entry : alarmTimes.entrySet()) {
+           Log.d("chase", "alarmKey: " + entry.getKey() + ". Value: " + entry.getValue());
+      }
+
       throw new IllegalStateException("Inconsistent pending alarms: "
+          + pendingAlarms.size() + " vs " + alarmTimes.size());
+    }
+  }
+
+  public void putLight(long alarmId, AlarmTime time) {
+    time = new AlarmTime(time);
+    Log.d("chase", "putlight called");
+    // Intents are considered equal if they have the same action, data, type,
+    // class, and categories.  In order to schedule multiple alarms, every
+    // pending intent must be different.  This means that we must encode
+    // the alarm id in the data section of the intent rather than in
+    // the extras bundle.
+    alarmId = alarmId + 1000; // Super hacky.. need a unique id so add 1000
+
+    Log.d("chase", "beforetime" + time);
+    time.makeOlder(2); // add time to light alarm
+    Log.d("chase", "after" + time);
+    Intent notifyIntent = new Intent(context, ReceiverAlarm.class);
+    notifyIntent.setData(AlarmUtil.alarmLightIdToUri(alarmId));
+    Log.d("chase", "scheduleIntent");
+    PendingIntent scheduleIntent =
+      PendingIntent.getBroadcast(context, 0, notifyIntent, 0);
+
+    // Schedule the alarm with the AlarmManager.
+    // Previous instances of this intent will be overwritten in
+    // the alarm manager.
+    try {
+      // In API version 19 (KitKat), the set() method of is no longer
+      // guaranteed to have exact timing semantics.  A setExact()
+      // method is supplied, but is not available with the minimum SDK
+      // version used by this application.  Here we look for this
+      // new method and use it if we find it.  Otherwise, we fall back
+      // to the old set() method.
+      Log.d("chase", "setexact");
+      Method setExact = AlarmManager.class.getDeclaredMethod(
+          "setExact", int.class, long.class, PendingIntent.class);
+      setExact.invoke(alarmManager, AlarmManager.RTC_WAKEUP,
+          time.calendar().getTimeInMillis(), scheduleIntent);
+    } catch (NoSuchMethodException e) {
+      alarmManager.set(AlarmManager.RTC_WAKEUP,
+          time.calendar().getTimeInMillis(), scheduleIntent);
+    } catch (IllegalAccessException e) {
+      // TODO(cgallek) combine these all with the java 7 OR syntax.
+      throw new RuntimeException(e);
+    } catch (IllegalArgumentException e) {
+      throw new RuntimeException(e);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e);
+    }
+
+    // Keep track of all scheduled alarms.
+    pendingAlarms.put(alarmId, new PendingAlarm(time, scheduleIntent));
+    alarmTimes.put(time, alarmId);
+
+    if (pendingAlarms.size() != alarmTimes.size()) {
+      throw new IllegalStateException("Inconsistent pending alarms2: "
           + pendingAlarms.size() + " vs " + alarmTimes.size());
     }
   }

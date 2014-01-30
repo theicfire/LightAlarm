@@ -75,6 +75,10 @@ public final class AlarmTime implements Parcelable, Comparable<AlarmTime> {
     findNextOccurrence();
   }
 
+  public void makeOlder(int seconds) {
+    this.calendar.add(Calendar.SECOND, seconds);
+  }
+
   private void findNextOccurrence() {
     Calendar now = Calendar.getInstance();
 

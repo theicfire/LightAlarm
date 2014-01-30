@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 
 import android.net.Uri;
 import android.provider.Settings;
+import android.util.Log;
 
 public final class AlarmUtil {
   static public Uri alarmIdToUri(long alarmId) {
@@ -27,6 +28,15 @@ public final class AlarmUtil {
 
   public static long alarmUriToId(Uri uri) {
     return Long.parseLong(uri.getSchemeSpecificPart());
+  }
+
+  public static boolean isLightUri(Uri uri) {
+    Log.d("chase", "isLightUri passedd " + uri.toString());
+    return uri.toString().startsWith("alarm_id_light:");
+  }
+
+  static public Uri alarmLightIdToUri(long alarmId) {
+    return Uri.parse("alarm_id_light:" + alarmId);
   }
 
   enum Interval {

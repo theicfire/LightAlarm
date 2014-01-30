@@ -17,6 +17,7 @@
     <activity android:name="ActivityPendingAlarms" android:finishOnTaskLaunch="true"></activity>
     <service android:name="AlarmClockService"></service>
     <service android:name="NotificationService"></service>
+    <service android:name="HelloService"></service>
     <receiver android:name="ReceiverAlarm"></receiver>
     <receiver android:name="ReceiverNotificationRefresh"></receiver>
     <receiver android:name="ReceiverDeviceBoot">
@@ -41,6 +42,7 @@
   <uses-permission android:name="android.permission.VIBRATE"></uses-permission>
   <uses-permission android:name="android.permission.WRITE_SETTINGS"></uses-permission>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"></uses-permission>
+  <uses-permission android:name="android.permission.INTERNET" />
   <!-- This is for debug releases only! -->
   <!-- <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission> -->
 </manifest> 

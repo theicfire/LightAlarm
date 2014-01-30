@@ -50,7 +50,7 @@ public class WakeLock {
   public static final void assertNoneHeld() throws WakeLockException {
     for (PowerManager.WakeLock wakeLock : wakeLocks.values()) {
       if (wakeLock.isHeld()) {
-        throw new WakeLockException("No wake locks are held.");
+        throw new WakeLockException("A wake lock is held.");
       }
     }
   }

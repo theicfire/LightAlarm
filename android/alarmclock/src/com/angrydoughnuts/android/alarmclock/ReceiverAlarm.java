@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 
 
 public class ReceiverAlarm extends BroadcastReceiver {
@@ -13,6 +14,15 @@ public class ReceiverAlarm extends BroadcastReceiver {
   public void onReceive(Context context, Intent recvIntent) {
     Uri alarmUri = recvIntent.getData();
     long alarmId = AlarmUtil.alarmUriToId(alarmUri);
+
+    if (AlarmUtil.isLightUri(alarmUri)) {
+        Log.d("chase", "call service");
+        Intent helloService = new Intent(context, HelloService.class);
+        helloService.setData(alarmUri);
+
+        context.startService(helloService);
+        return;
+    }
 
     try {
       WakeLock.acquire(context, alarmId);
